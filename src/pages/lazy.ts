@@ -16,3 +16,6 @@ export const ResetPasswordPage = lazy(() => import('@/pages/public/ResetPassword
 
 // Artisan
 export const ArtisanPendingPage = lazy(() => import('@/pages/artisan/ArtisanPendingPage'))
+export const ArtisanShopPage = lazy(() => import('@/pages/artisan/ArtisanShopPage'))
+export const ArtisanProductsPage = lazy(() => import('@/pages/artisan/ArtisanProductsPage'))
+export const ArtisanProductFormPage = lazy(() => import('@/pages/artisan/ArtisanProductFormPage'))

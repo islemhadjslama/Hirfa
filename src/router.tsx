@@ -8,6 +8,9 @@ import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RootLayout } from '@/components/layout/RootLayout'
 import {
   ArtisanPendingPage,
+  ArtisanProductFormPage,
+  ArtisanProductsPage,
+  ArtisanShopPage,
   ComingSoonPage,
   ForgotPasswordPage,
   HomePage,
@@ -77,16 +80,16 @@ export const router = createBrowserRouter([
             children: [
               // Accessibles même si la boutique n'est pas approuvée (ART-1)
               { path: 'en-attente', element: <ArtisanPendingPage /> },
-              soon('boutique', 'Ma boutique'),
+              { path: 'boutique', element: <ArtisanShopPage /> },
 
               // Boutique approuvée uniquement
               {
                 element: <RequireRole roles={['artisan']} requireApproved />,
                 children: [
                   { index: true, element: <ComingSoonPage title="Tableau de bord" /> },
-                  soon('produits', 'Mes produits'),
-                  soon('produits/nouveau', 'Nouveau produit'),
-                  soon('produits/:id/modifier', 'Modifier le produit'),
+                  { path: 'produits', element: <ArtisanProductsPage /> },
+                  { path: 'produits/nouveau', element: <ArtisanProductFormPage /> },
+                  { path: 'produits/:id/modifier', element: <ArtisanProductFormPage /> },
                   soon('commandes', 'Commandes'),
                   soon('commandes/:id', 'Détail de la commande'),
                   soon('avis', 'Avis reçus'),

@@ -584,6 +584,48 @@ ok(
 )
 ok((await as(null, `select * from reviews`)).length === 0, 'avis masqué invisible pour le public')
 
+console.log('\nFormulaire produit (Phase 3)')
+// L'application envoie slug: '' (colonne obligatoire dans les types) : le trigger le génère
+const pSlug = (
+  await as(
+    art1,
+    `insert into products (artisan_id, category_id, name, price, stock, slug) values ($1,$2,'Bol émaillé',12.5,4,'') returning id, slug`,
+    [art1, cat],
+  )
+)[0]
+ok(/^bol-emaille-[0-9a-f]{6}$/.test(pSlug.slug), `slug '' remplacé par le trigger (${pSlug.slug})`)
+const pForced = (
+  await as(
+    art1,
+    `insert into products (artisan_id, category_id, name, price, stock, slug) values ($1,$2,'Bol',1,1,'mon-slug') returning slug`,
+    [art1, cat],
+  )
+)[0]
+ok(pForced.slug !== 'mon-slug', 'un artisan ne choisit pas son slug')
+let deleteCode = null
+try {
+  await as(art1, `delete from products where id=$1`, [p1.id])
+} catch (e) {
+  deleteCode = e.code
+}
+ok(
+  deleteCode === '23503',
+  'suppression d’un produit commandé → code 23503 (passage en brouillon côté app)',
+)
+// Réordonnancement : suppression puis ajout au sein de la limite de 5 images
+await as(art1, `delete from product_images where product_id=$1 and position=4`, [p1.id])
+await as(art1, `update product_images set position=0 where product_id=$1 and position=3`, [p1.id])
+ok(
+  (
+    await as(
+      art1,
+      `insert into product_images (product_id, path, position) values ($1,'x/n.webp',4) returning id`,
+      [p1.id],
+    )
+  ).length === 1,
+  'retirer une image libère une place (limite de 5)',
+)
+
 console.log('\nSuppression, favoris, vues')
 await expectFail(
   'produit commandé non supprimable',
