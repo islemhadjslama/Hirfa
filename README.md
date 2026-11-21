@@ -43,7 +43,7 @@ npm run db:types    # régénère src/types/database.ts
 Pour tester les migrations **en local, sans Supabase ni Docker** (Postgres en WebAssembly) :
 
 ```bash
-npm run db:test     # migrations + seed + 125 scénarios RLS / RPC / triggers
+npm run db:test     # migrations + seed + 138 scénarios RLS / RPC / triggers
 ```
 
 ## Scripts
@@ -102,5 +102,5 @@ Ils seront créés par `npm run seed` (Phase 9) :
 - [x] Phase 5 — Panier et commande
 - [x] Phase 6 — Suivi des commandes
 - [x] Phase 7 — Favoris, avis, compte client
-- [ ] Phase 8 — Administration
+- [x] Phase 8 — Administration
 - [ ] Phase 9 — Tableaux de bord, seed et finitions

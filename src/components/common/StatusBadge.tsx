@@ -2,8 +2,10 @@ import { EyeOffIcon } from 'lucide-react'
 
 import { Badge } from '@/components/ui/badge'
 import {
+  ARTISAN_STATUS_LABELS,
   PRODUCT_STATUS_LABELS,
   SUB_ORDER_STATUS_LABELS,
+  type ArtisanStatus,
   type ProductStatus,
   type SubOrderStatus,
 } from '@/lib/labels'
@@ -49,6 +51,34 @@ export function SubOrderStatusBadge({ status }: { status: SubOrderStatus }) {
   return (
     <Badge variant="secondary" className={SUB_ORDER_STATUS_STYLES[status]}>
       {SUB_ORDER_STATUS_LABELS[status]}
+    </Badge>
+  )
+}
+
+const ARTISAN_STATUS_STYLES: Record<ArtisanStatus, string> = {
+  pending: 'bg-amber-100 text-amber-900',
+  approved: 'bg-olive/15 text-olive',
+  rejected: 'bg-destructive/10 text-destructive',
+  suspended: 'bg-muted text-foreground',
+}
+
+/** Statut d'une boutique artisan, traduit et coloré. */
+export function ArtisanStatusBadge({ status }: { status: ArtisanStatus }) {
+  return (
+    <Badge variant="secondary" className={ARTISAN_STATUS_STYLES[status]}>
+      {ARTISAN_STATUS_LABELS[status]}
+    </Badge>
+  )
+}
+
+/** Compte actif / désactivé. */
+export function AccountStatusBadge({ active }: { active: boolean }) {
+  return (
+    <Badge
+      variant="secondary"
+      className={active ? 'bg-olive/15 text-olive' : 'bg-destructive/10 text-destructive'}
+    >
+      {active ? 'Actif' : 'Désactivé'}
     </Badge>
   )
 }

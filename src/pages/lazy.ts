@@ -37,3 +37,16 @@ export const ArtisanProductFormPage = lazy(() => import('@/pages/artisan/Artisan
 export const ArtisanOrdersPage = lazy(() => import('@/pages/artisan/ArtisanOrdersPage'))
 export const ArtisanOrderDetailPage = lazy(() => import('@/pages/artisan/ArtisanOrderDetailPage'))
 export const ArtisanReviewsPage = lazy(() => import('@/pages/artisan/ArtisanReviewsPage'))
+
+// Administration
+export const AdminDashboardPage = lazy(() => import('@/pages/admin/AdminDashboardPage'))
+export const AdminArtisansPage = lazy(() => import('@/pages/admin/AdminArtisansPage'))
+export const AdminArtisanDetailPage = lazy(() => import('@/pages/admin/AdminArtisanDetailPage'))
+export const AdminClientsPage = lazy(() => import('@/pages/admin/AdminClientsPage'))
+export const AdminClientDetailPage = lazy(() => import('@/pages/admin/AdminClientDetailPage'))
+export const AdminProductsPage = lazy(() => import('@/pages/admin/AdminProductsPage'))
+export const AdminCategoriesPage = lazy(() => import('@/pages/admin/AdminCategoriesPage'))
+export const AdminOrdersPage = lazy(() => import('@/pages/admin/AdminOrdersPage'))
+export const AdminOrderDetailPage = lazy(() => import('@/pages/admin/AdminOrderDetailPage'))
+export const AdminReviewsPage = lazy(() => import('@/pages/admin/AdminReviewsPage'))
+export const AdminSettingsPage = lazy(() => import('@/pages/admin/AdminSettingsPage'))

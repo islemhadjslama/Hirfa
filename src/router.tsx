@@ -1,4 +1,4 @@
-import { createBrowserRouter, type RouteObject } from 'react-router'
+import { createBrowserRouter } from 'react-router'
 
 import { GuestOnlyRoute } from '@/components/auth/GuestOnlyRoute'
 import { RequireRole } from '@/components/auth/RequireRole'
@@ -8,6 +8,17 @@ import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RootLayout } from '@/components/layout/RootLayout'
 import {
   AccountPage,
+  AdminArtisanDetailPage,
+  AdminArtisansPage,
+  AdminCategoriesPage,
+  AdminClientDetailPage,
+  AdminClientsPage,
+  AdminDashboardPage,
+  AdminOrderDetailPage,
+  AdminOrdersPage,
+  AdminProductsPage,
+  AdminReviewsPage,
+  AdminSettingsPage,
   ArtisanOrderDetailPage,
   ArtisanOrdersPage,
   ArtisanPendingPage,
@@ -34,11 +45,6 @@ import {
   RegisterClientPage,
   ResetPasswordPage,
 } from '@/pages/lazy'
-
-/** Route provisoire : sera remplacée par la vraie page dans la phase concernée. */
-function soon(path: string, title: string): RouteObject {
-  return { path, element: <ComingSoonPage title={title} /> }
-}
 
 export const router = createBrowserRouter([
   {
@@ -100,6 +106,7 @@ export const router = createBrowserRouter([
               {
                 element: <RequireRole roles={['artisan']} requireApproved />,
                 children: [
+                  // ART-8 (tableau de bord artisan) : Phase 9
                   { index: true, element: <ComingSoonPage title="Tableau de bord" /> },
                   { path: 'produits', element: <ArtisanProductsPage /> },
                   { path: 'produits/nouveau', element: <ArtisanProductFormPage /> },
@@ -122,17 +129,17 @@ export const router = createBrowserRouter([
           {
             element: <AdminLayout />,
             children: [
-              { index: true, element: <ComingSoonPage title="Tableau de bord" /> },
-              soon('artisans', 'Artisans'),
-              soon('artisans/:id', 'Détail de l’artisan'),
-              soon('clients', 'Clients'),
-              soon('clients/:id', 'Détail du client'),
-              soon('produits', 'Produits'),
-              soon('categories', 'Catégories'),
-              soon('commandes', 'Commandes'),
-              soon('commandes/:id', 'Détail de la commande'),
-              soon('avis', 'Avis'),
-              soon('parametres', 'Paramètres'),
+              { index: true, element: <AdminDashboardPage /> },
+              { path: 'artisans', element: <AdminArtisansPage /> },
+              { path: 'artisans/:id', element: <AdminArtisanDetailPage /> },
+              { path: 'clients', element: <AdminClientsPage /> },
+              { path: 'clients/:id', element: <AdminClientDetailPage /> },
+              { path: 'produits', element: <AdminProductsPage /> },
+              { path: 'categories', element: <AdminCategoriesPage /> },
+              { path: 'commandes', element: <AdminOrdersPage /> },
+              { path: 'commandes/:id', element: <AdminOrderDetailPage /> },
+              { path: 'avis', element: <AdminReviewsPage /> },
+              { path: 'parametres', element: <AdminSettingsPage /> },
             ],
           },
         ],

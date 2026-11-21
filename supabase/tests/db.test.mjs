@@ -948,5 +948,92 @@ ok(
   'can_review_product : vrai après livraison',
 )
 
+console.log('\nAdministration (Phase 8)')
+ok((await as(admin, `select id from profiles`)).length >= 7, 'l’admin lit tous les profils (ADM-3)')
+ok(
+  (
+    await as(admin, `update artisan_profiles set status='approved' where id=$1 returning status`, [
+      art2,
+    ])
+  )[0]?.status === 'approved',
+  'l’admin réactive une boutique suspendue (ADM-2)',
+)
+ok(
+  (await as(admin, `select id from catalog_products where artisan_id=$1`, [art2])).length > 0,
+  '… ses produits publiés reviennent dans le catalogue',
+)
+const newCat = (
+  await as(
+    admin,
+    `insert into categories (name, slug, sort_order) values ('Calligraphie', 'calligraphie', 12) returning id`,
+  )
+)[0]
+ok(Boolean(newCat?.id), 'l’admin crée une catégorie (ADM-5)')
+ok(
+  (
+    await as(admin, `update categories set is_active=false where id=$1 returning is_active`, [
+      newCat.id,
+    ])
+  )[0]?.is_active === false,
+  'l’admin désactive une catégorie',
+)
+ok(
+  (await as(admin, `delete from categories where id=$1 returning id`, [newCat.id])).length === 1,
+  'catégorie vide supprimable',
+)
+await expectFail(
+  'un artisan ne crée pas de catégorie',
+  art1,
+  `insert into categories (name, slug) values ('X', 'x-art')`,
+)
+const rv = (
+  await q(`insert into reviews (product_id, client_id, rating) values ($1,$2,2) returning id`, [
+    p3.id,
+    client1,
+  ])
+)[0]
+ok(
+  (await as(admin, `update reviews set is_hidden=true where id=$1 returning is_hidden`, [rv.id]))[0]
+    ?.is_hidden === true,
+  'l’admin masque un avis (ADM-7)',
+)
+ok(
+  (await as(admin, `delete from reviews where id=$1 returning id`, [rv.id])).length === 1,
+  'l’admin supprime un avis',
+)
+const o3 = (
+  await as(client1, `select place_order($1,$2) as id`, [
+    [{ product_id: Number(p3.id), quantity: 1 }],
+    shipping,
+  ])
+)[0].id
+const s4 = (await q(`select id from sub_orders where order_id=$1`, [o3]))[0].id
+await as(admin, `select update_sub_order_status($1,'shipped',null)`, [s4])
+ok(
+  (await q(`select status from sub_orders where id=$1`, [s4]))[0].status === 'shipped',
+  'l’admin saute des étapes (pending → shipped)',
+)
+await as(admin, `select update_sub_order_status($1,'cancelled','Colis perdu')`, [s4])
+ok(
+  (await q(`select status from sub_orders where id=$1`, [s4]))[0].status === 'cancelled',
+  'l’admin annule un colis expédié (ADM-6)',
+)
+await expectFail(
+  'aucune modification après annulation',
+  admin,
+  `select update_sub_order_status($1,'pending',null)`,
+  [s4],
+  'terminée',
+)
+ok(
+  (
+    await as(
+      admin,
+      `update app_settings set site_name='Hirfa Tunisie', contact_email='bonjour@hirfa.tn' where id=1 returning site_name`,
+    )
+  )[0]?.site_name === 'Hirfa Tunisie',
+  'l’admin modifie nom et email du site (ADM-8)',
+)
+
 console.log(`\n${passed} réussis, ${failed} échoués`)
 process.exit(failed ? 1 : 0)

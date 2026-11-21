@@ -2,6 +2,7 @@ import { MailIcon, MapPinIcon } from 'lucide-react'
 import { Link } from 'react-router'
 
 import { Logo } from '@/components/common/Logo'
+import { useAppSettings } from '@/features/cart/api'
 import { CONTACT_EMAIL } from '@/lib/constants'
 
 const FOOTER_SECTIONS = [
@@ -30,6 +31,10 @@ const FOOTER_SECTIONS = [
 ]
 
 export function Footer() {
+  const settings = useAppSettings()
+  const contactEmail = settings.data?.contact_email ?? CONTACT_EMAIL
+  const siteName = settings.data?.site_name ?? 'Hirfa'
+
   return (
     <footer className="mt-16 border-t bg-secondary/60">
       <div className="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:grid-cols-2 sm:px-6 md:grid-cols-[1.4fr_repeat(3,1fr)]">
@@ -42,8 +47,8 @@ export function Footer() {
           <ul className="space-y-1 text-sm text-muted-foreground">
             <li className="flex items-center gap-2">
               <MailIcon className="size-4" aria-hidden="true" />
-              <a href={`mailto:${CONTACT_EMAIL}`} className="hover:text-primary">
-                {CONTACT_EMAIL}
+              <a href={`mailto:${contactEmail}`} className="hover:text-primary">
+                {contactEmail}
               </a>
             </li>
             <li className="flex items-center gap-2">
@@ -73,8 +78,8 @@ export function Footer() {
 
       <div className="border-t">
         <p className="mx-auto max-w-7xl px-4 py-4 text-xs text-muted-foreground sm:px-6">
-          © {new Date().getFullYear()} Hirfa — Projet académique réalisé dans un cadre pédagogique.
-          Aucune transaction réelle.
+          © {new Date().getFullYear()} {siteName} — Projet académique réalisé dans un cadre
+          pédagogique. Aucune transaction réelle.
         </p>
       </div>
     </footer>
