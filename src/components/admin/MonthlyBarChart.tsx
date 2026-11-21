@@ -10,8 +10,10 @@ type MonthlyBarChartProps = {
   data: { month: string; value: number }[]
   /** Libellé de la valeur, ex. « commandes ». */
   unit: string
-  /** Formatage des valeurs (axe, info-bulle, tableau). */
+  /** Formatage des valeurs (info-bulle, tableau). */
   format?: (value: number) => string
+  /** Formatage plus court pour l'axe vertical (par défaut : `format`). */
+  axisFormat?: (value: number) => string
   title: string
 }
 
@@ -20,7 +22,13 @@ type MonthlyBarChartProps = {
  * Barres fines à bords arrondis, grille discrète, info-bulle au survol et
  * tableau équivalent pour les lecteurs d'écran.
  */
-export function MonthlyBarChart({ data, unit, format = String, title }: MonthlyBarChartProps) {
+export function MonthlyBarChart({
+  data,
+  unit,
+  format = String,
+  axisFormat,
+  title,
+}: MonthlyBarChartProps) {
   const rows = data.map((d) => ({ ...d, label: monthFormatter.format(monthDate(d.month)) }))
 
   return (
@@ -44,9 +52,9 @@ export function MonthlyBarChart({ data, unit, format = String, title }: MonthlyB
               allowDecimals={false}
               tickLine={false}
               axisLine={false}
-              width={48}
+              width={axisFormat ? 64 : 48}
               tick={{ fill: 'var(--muted-foreground)', fontSize: 12 }}
-              tickFormatter={(value: number) => format(value)}
+              tickFormatter={(value: number) => (axisFormat ?? format)(value)}
             />
             <Tooltip
               cursor={{ fill: 'var(--muted)', opacity: 0.6 }}

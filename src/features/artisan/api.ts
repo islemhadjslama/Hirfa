@@ -8,6 +8,7 @@ import {
   type ShopValues,
 } from '@/features/artisan/schemas'
 import { getErrorMessage } from '@/lib/errors'
+import type { SubOrderStatus } from '@/lib/labels'
 import { pathFromPublicUrl, publicUrl, removeFiles, uploadImage } from '@/lib/storage'
 import { supabase } from '@/lib/supabase'
 import type { Tables } from '@/types/database'
@@ -274,5 +275,41 @@ export function useDeleteProduct() {
   return useMutation({
     mutationFn: deleteProduct,
     onSettled: () => client.invalidateQueries({ queryKey: ['artisan'] }),
+  })
+}
+
+// =============================================================================
+// Tableau de bord (ART-8)
+// =============================================================================
+
+export type ArtisanStats = {
+  revenue: number
+  pending_orders: number
+  published_products: number
+  avg_rating: number | null
+  reviews_count: number
+  sales_by_month: { month: string; revenue: number; orders: number }[]
+  top_products: { product_id: number | null; name: string; quantity: number; revenue: number }[]
+  recent_orders: {
+    id: number
+    order_number: string
+    created_at: string
+    status: SubOrderStatus
+    total: number
+    client_name: string
+  }[]
+}
+
+export function useArtisanStats(enabled: boolean) {
+  return useQuery({
+    queryKey: ['artisan', 'stats'],
+    enabled,
+    refetchOnWindowFocus: true,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc('artisan_dashboard_stats')
+      if (error) throw error
+      // Forme garantie par la fonction SQL artisan_dashboard_stats (migration 2)
+      return data as unknown as ArtisanStats
+    },
   })
 }

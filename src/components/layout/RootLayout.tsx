@@ -1,10 +1,12 @@
 import { useEffect, useRef } from 'react'
-import { Outlet, ScrollRestoration, useNavigate } from 'react-router'
+import { Outlet, ScrollRestoration, useMatches, useNavigate } from 'react-router'
 import { toast } from 'sonner'
 
 import { signOut } from '@/features/auth/api'
 import { DEACTIVATED_MESSAGE } from '@/features/auth/redirects'
+import { pageTitle } from '@/hooks/usePageTitle'
 import { useProfile } from '@/hooks/useProfile'
+import type { RouteHandle } from '@/router'
 
 /**
  * AUTH-6 : dès que le profil chargé indique un compte désactivé (à la
@@ -26,9 +28,20 @@ function useDeactivatedAccountLogout() {
   }, [profile, navigate])
 }
 
+/** Titre de l'onglet de la route affichée (`handle.title` ; null = défini par la page). */
+function useRouteTitle() {
+  const matches = useMatches()
+  const handle = matches[matches.length - 1]?.handle as RouteHandle | undefined
+  const title = handle?.title
+  useEffect(() => {
+    if (title !== null && title !== undefined) document.title = pageTitle(title)
+  }, [title])
+}
+
 /** Racine de toutes les routes. */
 export function RootLayout() {
   useDeactivatedAccountLogout()
+  useRouteTitle()
   return (
     <>
       <Outlet />

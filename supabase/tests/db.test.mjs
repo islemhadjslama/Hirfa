@@ -306,14 +306,14 @@ ok(
 ok((await as(null, `select * from categories`)).length === 11, 'visiteur voit les catégories')
 await as(
   art1,
-  `insert into product_images (product_id, path, position) values ($1,'x/1.webp',0),($1,'x/2.webp',1),($1,'x/3.webp',2),($1,'x/4.webp',3),($1,'x/5.webp',4)`,
-  [p1.id],
+  `insert into product_images (product_id, path, position) select $1::bigint, $2 || '/' || $1::text || '/' || n || '.webp', n - 1 from generate_series(1, 5) n`,
+  [p1.id, art1],
 )
 await expectFail(
   '6e image refusée',
   art1,
-  `insert into product_images (product_id, path, position) values ($1,'x/6.webp',5)`,
-  [p1.id],
+  `insert into product_images (product_id, path, position) values ($1::bigint, $2 || '/' || $1::text || '/6.webp', 5)`,
+  [p1.id, art1],
   '5 images',
 )
 ok(
@@ -619,8 +619,8 @@ ok(
   (
     await as(
       art1,
-      `insert into product_images (product_id, path, position) values ($1,'x/n.webp',4) returning id`,
-      [p1.id],
+      `insert into product_images (product_id, path, position) values ($1::bigint, $2 || '/' || $1::text || '/n.webp', 4) returning id`,
+      [p1.id, art1],
     )
   ).length === 1,
   'retirer une image libère une place (limite de 5)',
@@ -833,8 +833,8 @@ const pBijou = (
 )[0].id
 await as(
   art4,
-  `insert into product_images (product_id, path, position) values ($1,'a/2.webp',1),($1,'a/1.webp',0)`,
-  [pVisible],
+  `insert into product_images (product_id, path, position) values ($1::bigint, $2 || '/' || $1::text || '/2.webp', 1), ($1::bigint, $2 || '/' || $1::text || '/1.webp', 0)`,
+  [pVisible, art4],
 )
 const ids = async (uid, sql = `select id from catalog_products`) =>
   (await as(uid, sql)).map((r) => Number(r.id))
@@ -854,7 +854,7 @@ ok(
   'vue : le propriétaire ne voit pas son brouillon dans le catalogue',
 )
 const row = (await as(null, `select * from catalog_products where id=$1`, [pVisible]))[0]
-ok(row.image_path === 'a/1.webp', 'vue : image principale = position 0')
+ok(row.image_path === `${art4}/${pVisible}/1.webp`, 'vue : image principale = position 0')
 ok(
   row.artisan_slug === 'atelier-hela' && row.category_slug === 'poterie-ceramique',
   'vue : slugs artisan et catégorie',
@@ -1033,6 +1033,67 @@ ok(
     )
   )[0]?.site_name === 'Hirfa Tunisie',
   'l’admin modifie nom et email du site (ADM-8)',
+)
+
+console.log('\nRevue de sécurité (Phase 9)')
+await expectFail(
+  'image produit : chemin dans le dossier d’un autre artisan refusé',
+  art1,
+  `insert into product_images (product_id, path, position) values ($1::bigint, $2 || '/' || $1::text || '/vol.webp', 0)`,
+  [p2.id, art4],
+)
+await expectFail(
+  'image produit : chemin d’un autre produit refusé',
+  art1,
+  `insert into product_images (product_id, path, position) values ($1::bigint, $2 || '/999999/x.webp', 0)`,
+  [p2.id, art1],
+)
+ok(
+  (
+    await as(
+      admin,
+      `insert into product_images (product_id, path, position) values ($1, 'seed/x.webp', 0) returning id`,
+      [p2.id],
+    )
+  ).length === 1,
+  'image produit : l’admin n’est pas contraint',
+)
+await q(
+  `insert into storage.objects (bucket_id, name) values ('product-images', $1), ('avatars', $2)`,
+  [`${art4}/1/a.webp`, `${client2}/b.webp`],
+)
+ok(
+  (await as(null, `select name from storage.objects`)).length === 0,
+  'storage : un visiteur ne peut pas lister les fichiers',
+)
+ok(
+  (await as(client1, `select name from storage.objects`)).every((o) =>
+    o.name.startsWith(`${client1}/`),
+  ),
+  'storage : un utilisateur ne liste que son dossier',
+)
+ok(
+  (await as(art1, `select name from storage.objects where name like $1`, [`${art4}/%`])).length ===
+    0,
+  'storage : un artisan ne liste pas les fichiers d’un autre',
+)
+ok(
+  (await as(admin, `select name from storage.objects`)).length >= 2,
+  'storage : l’admin liste tout',
+)
+ok(
+  (
+    await as(
+      art1,
+      `insert into storage.objects (bucket_id, name) values ('product-images', $1) returning name`,
+      [`${art1}/2/c.webp`],
+    )
+  ).length === 1,
+  'storage : envoi dans son dossier toujours possible (INSERT … RETURNING)',
+)
+ok(
+  (await q(`select role from profiles where id=$1`, [hacker]))[0].role === 'client',
+  'personne ne devient admin par l’inscription (§12)',
 )
 
 console.log(`\n${passed} réussis, ${failed} échoués`)

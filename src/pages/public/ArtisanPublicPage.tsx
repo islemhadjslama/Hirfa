@@ -18,6 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useArtisanShop } from '@/features/catalog/api'
 import { PRODUCTS_PER_PAGE } from '@/lib/constants'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { formatDate } from '@/lib/format'
 
 /** CAT-8 — Boutique publique d'un artisan. */
@@ -29,6 +30,7 @@ export default function ArtisanPublicPage() {
 
 function ArtisanShopView({ slug }: { slug: string | undefined }) {
   const shop = useArtisanShop(slug)
+  usePageTitle(shop.data?.shop_name ?? (shop.isPending ? null : 'Boutique introuvable'))
   const [visible, setVisible] = useState(PRODUCTS_PER_PAGE)
 
   if (shop.isPending) {

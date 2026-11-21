@@ -5,7 +5,6 @@ import { lazy } from 'react'
 // Public
 export const HomePage = lazy(() => import('@/pages/public/HomePage'))
 export const NotFoundPage = lazy(() => import('@/pages/public/NotFoundPage'))
-export const ComingSoonPage = lazy(() => import('@/pages/public/ComingSoonPage'))
 
 // Catalogue
 export const CatalogPage = lazy(() => import('@/pages/public/CatalogPage'))
@@ -31,6 +30,7 @@ export const ResetPasswordPage = lazy(() => import('@/pages/public/ResetPassword
 
 // Artisan
 export const ArtisanPendingPage = lazy(() => import('@/pages/artisan/ArtisanPendingPage'))
+export const ArtisanDashboardPage = lazy(() => import('@/pages/artisan/ArtisanDashboardPage'))
 export const ArtisanShopPage = lazy(() => import('@/pages/artisan/ArtisanShopPage'))
 export const ArtisanProductsPage = lazy(() => import('@/pages/artisan/ArtisanProductsPage'))
 export const ArtisanProductFormPage = lazy(() => import('@/pages/artisan/ArtisanProductFormPage'))

@@ -15,7 +15,9 @@ const dateTimeFormatter = new Intl.DateTimeFormat('fr-FR', {
 /** Prix en dinars tunisiens, ex. `45,000 DT`. Accepte les `numeric` renvoyés en chaîne. */
 export function formatPrice(value: number | string | null | undefined): string {
   const amount = typeof value === 'string' ? Number(value) : (value ?? 0)
-  return priceFormatter.format(Number.isFinite(amount) ? amount : 0)
+  // Espace fine insécable (U+202F) → espace insécable classique : la police des titres
+  // (Fraunces) n'a pas de glyphe pour U+202F et « 1 234 » s'afficherait « 1234 ».
+  return priceFormatter.format(Number.isFinite(amount) ? amount : 0).replace(/\u202f/g, '\u00a0')
 }
 
 /** Date longue, ex. `21 novembre 2026`. */

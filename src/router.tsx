@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, type RouteObject } from 'react-router'
 
 import { GuestOnlyRoute } from '@/components/auth/GuestOnlyRoute'
 import { RequireRole } from '@/components/auth/RequireRole'
@@ -6,6 +6,7 @@ import { AdminLayout } from '@/components/layout/AdminLayout'
 import { ArtisanLayout } from '@/components/layout/ArtisanLayout'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RootLayout } from '@/components/layout/RootLayout'
+import { RouteErrorPage } from '@/components/layout/RouteErrorPage'
 import {
   AccountPage,
   AdminArtisanDetailPage,
@@ -19,6 +20,7 @@ import {
   AdminProductsPage,
   AdminReviewsPage,
   AdminSettingsPage,
+  ArtisanDashboardPage,
   ArtisanOrderDetailPage,
   ArtisanOrdersPage,
   ArtisanPendingPage,
@@ -35,7 +37,6 @@ import {
   ArtisanProductFormPage,
   ArtisanProductsPage,
   ArtisanShopPage,
-  ComingSoonPage,
   ForgotPasswordPage,
   HomePage,
   LoginPage,
@@ -46,47 +47,61 @@ import {
   ResetPasswordPage,
 } from '@/pages/lazy'
 
+/** Titre de l'onglet, lu par RootLayout (`null` : la page le définit elle-même). */
+export type RouteHandle = { title: string | null }
+
+/** Route feuille avec son titre d'onglet. */
+function page(
+  path: string | null,
+  element: RouteObject['element'],
+  title: string | null,
+): RouteObject {
+  const handle: RouteHandle = { title }
+  return path === null ? { index: true, element, handle } : { path, element, handle }
+}
+
 export const router = createBrowserRouter([
   {
     element: <RootLayout />,
+    errorElement: <RouteErrorPage />,
     children: [
       // ---------------------------------------------------------------- Public
       {
         element: <PublicLayout />,
         children: [
-          { index: true, element: <HomePage /> },
-          { path: 'catalogue', element: <CatalogPage /> },
-          { path: 'produits/:slug', element: <ProductPage /> },
-          { path: 'artisans', element: <ArtisansPage /> },
-          { path: 'artisans/:slug', element: <ArtisanPublicPage /> },
-          { path: 'panier', element: <CartPage /> },
+          page(null, <HomePage />, ''),
+          page('catalogue', <CatalogPage />, 'Catalogue'),
+          page('produits/:slug', <ProductPage />, null),
+          page('artisans', <ArtisansPage />, 'Nos artisans'),
+          page('artisans/:slug', <ArtisanPublicPage />, null),
+          page('panier', <CartPage />, 'Mon panier'),
 
           // Visiteurs uniquement (un utilisateur connecté est redirigé vers son espace)
           {
             element: <GuestOnlyRoute />,
             children: [
-              { path: 'connexion', element: <LoginPage /> },
-              { path: 'inscription', element: <RegisterClientPage /> },
-              { path: 'artisan/inscription', element: <RegisterArtisanPage /> },
-              { path: 'mot-de-passe-oublie', element: <ForgotPasswordPage /> },
+              page('connexion', <LoginPage />, 'Connexion'),
+              page('inscription', <RegisterClientPage />, 'Créer un compte'),
+              page('artisan/inscription', <RegisterArtisanPage />, 'Ouvrir ma boutique'),
+              page('mot-de-passe-oublie', <ForgotPasswordPage />, 'Mot de passe oublié'),
             ],
           },
-          { path: 'reinitialiser-mot-de-passe', element: <ResetPasswordPage /> },
+          page('reinitialiser-mot-de-passe', <ResetPasswordPage />, 'Nouveau mot de passe'),
 
           // -------------------------------------------------------- Client
           {
             element: <RequireRole roles={['client']} />,
             children: [
-              { path: 'commande', element: <CheckoutPage /> },
-              { path: 'commande/confirmation/:id', element: <OrderConfirmationPage /> },
-              { path: 'compte', element: <AccountPage /> },
-              { path: 'compte/commandes', element: <ClientOrdersPage /> },
-              { path: 'compte/commandes/:id', element: <ClientOrderDetailPage /> },
-              { path: 'compte/favoris', element: <FavoritesPage /> },
+              page('commande', <CheckoutPage />, 'Finaliser ma commande'),
+              page('commande/confirmation/:id', <OrderConfirmationPage />, 'Commande confirmée'),
+              page('compte', <AccountPage />, 'Mon compte'),
+              page('compte/commandes', <ClientOrdersPage />, 'Mes commandes'),
+              page('compte/commandes/:id', <ClientOrderDetailPage />, 'Détail de la commande'),
+              page('compte/favoris', <FavoritesPage />, 'Mes favoris'),
             ],
           },
 
-          { path: '*', element: <NotFoundPage /> },
+          page('*', <NotFoundPage />, 'Page introuvable'),
         ],
       },
 
@@ -99,21 +114,20 @@ export const router = createBrowserRouter([
             element: <ArtisanLayout />,
             children: [
               // Accessibles même si la boutique n'est pas approuvée (ART-1)
-              { path: 'en-attente', element: <ArtisanPendingPage /> },
-              { path: 'boutique', element: <ArtisanShopPage /> },
+              page('en-attente', <ArtisanPendingPage />, 'Statut de ma boutique'),
+              page('boutique', <ArtisanShopPage />, 'Ma boutique'),
 
               // Boutique approuvée uniquement
               {
                 element: <RequireRole roles={['artisan']} requireApproved />,
                 children: [
-                  // ART-8 (tableau de bord artisan) : Phase 9
-                  { index: true, element: <ComingSoonPage title="Tableau de bord" /> },
-                  { path: 'produits', element: <ArtisanProductsPage /> },
-                  { path: 'produits/nouveau', element: <ArtisanProductFormPage /> },
-                  { path: 'produits/:id/modifier', element: <ArtisanProductFormPage /> },
-                  { path: 'commandes', element: <ArtisanOrdersPage /> },
-                  { path: 'commandes/:id', element: <ArtisanOrderDetailPage /> },
-                  { path: 'avis', element: <ArtisanReviewsPage /> },
+                  page(null, <ArtisanDashboardPage />, 'Tableau de bord'),
+                  page('produits', <ArtisanProductsPage />, 'Mes produits'),
+                  page('produits/nouveau', <ArtisanProductFormPage />, 'Nouveau produit'),
+                  page('produits/:id/modifier', <ArtisanProductFormPage />, 'Modifier le produit'),
+                  page('commandes', <ArtisanOrdersPage />, 'Commandes'),
+                  page('commandes/:id', <ArtisanOrderDetailPage />, 'Détail de la commande'),
+                  page('avis', <ArtisanReviewsPage />, 'Avis reçus'),
                 ],
               },
             ],
@@ -129,17 +143,17 @@ export const router = createBrowserRouter([
           {
             element: <AdminLayout />,
             children: [
-              { index: true, element: <AdminDashboardPage /> },
-              { path: 'artisans', element: <AdminArtisansPage /> },
-              { path: 'artisans/:id', element: <AdminArtisanDetailPage /> },
-              { path: 'clients', element: <AdminClientsPage /> },
-              { path: 'clients/:id', element: <AdminClientDetailPage /> },
-              { path: 'produits', element: <AdminProductsPage /> },
-              { path: 'categories', element: <AdminCategoriesPage /> },
-              { path: 'commandes', element: <AdminOrdersPage /> },
-              { path: 'commandes/:id', element: <AdminOrderDetailPage /> },
-              { path: 'avis', element: <AdminReviewsPage /> },
-              { path: 'parametres', element: <AdminSettingsPage /> },
+              page(null, <AdminDashboardPage />, 'Administration'),
+              page('artisans', <AdminArtisansPage />, 'Artisans · Admin'),
+              page('artisans/:id', <AdminArtisanDetailPage />, 'Artisan · Admin'),
+              page('clients', <AdminClientsPage />, 'Clients · Admin'),
+              page('clients/:id', <AdminClientDetailPage />, 'Client · Admin'),
+              page('produits', <AdminProductsPage />, 'Produits · Admin'),
+              page('categories', <AdminCategoriesPage />, 'Catégories · Admin'),
+              page('commandes', <AdminOrdersPage />, 'Commandes · Admin'),
+              page('commandes/:id', <AdminOrderDetailPage />, 'Commande · Admin'),
+              page('avis', <AdminReviewsPage />, 'Avis · Admin'),
+              page('parametres', <AdminSettingsPage />, 'Paramètres · Admin'),
             ],
           },
         ],

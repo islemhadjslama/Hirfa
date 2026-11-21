@@ -144,3 +144,16 @@ Décisions prises pendant le développement sur des points non couverts (ou ambi
 | D-96 | Avis (ADM-7) | Filtre visibles / masqués. Masquer et afficher sans confirmation (réversible), supprimer après confirmation. L'auteur (nom, email) est visible par l'admin uniquement. | ADM-7. |
 | D-97 | Paramètres (ADM-8) | Frais de livraison (3 décimales), nom du site, email de contact. Le pied de page affiche désormais le nom et l'email enregistrés. Les commandes déjà passées gardent leurs frais (copiés dans `sub_orders.shipping_fee`). | ADM-8, RM-3. |
 | D-98 | Listes admin | Pagination serveur de 20 lignes, filtres dans l'URL (`statut`, `artisan`, `categorie`, `du`, `au`, `visibilite`, `q`, `page`), tableaux défilant horizontalement sur petit écran, colonnes secondaires masquées sur mobile. | Mobile-first (§8), liens partageables. |
+
+## Phase 9 — Tableaux de bord, seed et finitions
+
+| # | Sujet | Décision | Raison |
+|---|---|---|---|
+| D-99 | Tableau de bord artisan (ART-8) | Indicateurs (CA livré, commandes en attente, produits publiés, note moyenne), histogramme des ventes livrées sur 6 mois (axe en DT arrondi, info-bulle au millime près), top 5 des ventes, 5 dernières commandes ; données de `artisan_dashboard_stats()`. | ART-8 ; même composant de graphique que l'admin (D-90). |
+| D-100 | Revue de sécurité | Migration `security_hardening` : (1) un chemin d'image produit doit commencer par `{uid}/{product_id}/` ; (2) le listing Storage est limité à son propre dossier (ou à l'admin). 9 tests ajoutés. Détail dans `RECETTE.md`. | Deux écarts trouvés lors de la revue des politiques. |
+| D-101 | Script de seed | `scripts/seed-demo.ts` (lancé avec `tsx`, variables lues par `process.loadEnvFile('.env.local')`) : comptes et boutiques créés avec la clé secrète, puis **commandes, statuts et avis créés en se connectant** comme client et artisan (vraies RPC et vraie RLS). Commandes antidatées sur 4 mois pour remplir les graphiques. Idempotent : comptes et produits retrouvés par email et par nom ; commandes et avis seulement s'il n'y a encore aucune commande. | §10. Les données de démonstration respectent les règles métier. |
+| D-102 | Images du seed | PNG générés en TypeScript pur (`scripts/placeholder-png.ts` : motifs zellige, kilim, rayures… aux couleurs de Hirfa, encodés avec zlib), copiés dans `scripts/seed-images/` (ignoré par git) et envoyés dans Storage. | CLAUDE.md : aucune ressource externe pour le seed. |
+| D-103 | Titres d'onglet | Chaque route déclare son titre (`handle.title`, appliqué par `RootLayout`) ; la fiche produit et la boutique utilisent le nom chargé (`usePageTitle`). Format : « Catalogue · Hirfa ». | Accessibilité et confort (historique, onglets). |
+| D-104 | Page d'erreur | `errorElement` racine en français : erreur de rendu, page introuvable, ou chunk introuvable après un nouveau déploiement (« Le site a été mis à jour », bouton « Recharger »). | Remplace la page anglaise par défaut de React Router. |
+| D-105 | Déploiement | `vercel.json` : réécriture de toutes les routes vers `index.html` (SPA). | Guide d'installation, étape 6. |
+| D-106 | Page provisoire supprimée | `ComingSoonPage` et l'utilitaire `soon()` sont supprimés : toutes les routes du §7 ont leur vraie page. | Fin du projet. |

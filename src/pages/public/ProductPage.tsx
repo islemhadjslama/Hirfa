@@ -29,6 +29,7 @@ import {
 } from '@/features/catalog/api'
 import { formatDate, formatPrice } from '@/lib/format'
 import { publicUrl } from '@/lib/storage'
+import { usePageTitle } from '@/hooks/usePageTitle'
 import { useCartStore } from '@/stores/cart'
 import { cn } from '@/lib/utils'
 
@@ -160,6 +161,7 @@ export default function ProductPage() {
 
 function ProductView({ slug }: { slug: string | undefined }) {
   const product = useProductDetails(slug)
+  usePageTitle(product.data?.name ?? (product.isPending ? null : 'Produit introuvable'))
   const others = useOtherArtisanProducts(product.data?.artisan.slug, product.data?.id)
   const [quantity, setQuantity] = useState(1)
   const navigate = useNavigate()
