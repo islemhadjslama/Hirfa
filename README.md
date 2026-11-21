@@ -100,7 +100,7 @@ Ils seront créés par `npm run seed` (Phase 9) :
 - [x] Phase 3 — Espace artisan
 - [x] Phase 4 — Catalogue public
 - [x] Phase 5 — Panier et commande
-- [ ] Phase 6 — Suivi des commandes
+- [x] Phase 6 — Suivi des commandes
 - [ ] Phase 7 — Favoris, avis, compte client
 - [ ] Phase 8 — Administration
 - [ ] Phase 9 — Tableaux de bord, seed et finitions
