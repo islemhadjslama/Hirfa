@@ -3,13 +3,11 @@ import {
   ImageIcon,
   MapPinIcon,
   MessageSquareTextIcon,
-  MinusIcon,
   PackageXIcon,
-  PlusIcon,
   ShoppingBagIcon,
 } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
-import { Link, useParams } from 'react-router'
+import { Link, useNavigate, useParams } from 'react-router'
 import { toast } from 'sonner'
 
 import { ArtisanLogo } from '@/components/common/ArtisanCard'
@@ -17,6 +15,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { FavoriteButton } from '@/components/common/FavoriteButton'
 import { ProductGrid } from '@/components/common/ProductCard'
+import { QuantityStepper } from '@/components/common/QuantityStepper'
 import { RatingStars } from '@/components/common/RatingStars'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -29,6 +28,7 @@ import {
 } from '@/features/catalog/api'
 import { formatDate, formatPrice } from '@/lib/format'
 import { publicUrl } from '@/lib/storage'
+import { useCartStore } from '@/stores/cart'
 import { cn } from '@/lib/utils'
 
 function Gallery({ product }: { product: ProductDetails }) {
@@ -79,57 +79,6 @@ function Gallery({ product }: { product: ProductDetails }) {
           ))}
         </ul>
       )}
-    </div>
-  )
-}
-
-function QuantitySelector({
-  value,
-  max,
-  onChange,
-}: {
-  value: number
-  max: number
-  onChange: (value: number) => void
-}) {
-  return (
-    <div className="inline-flex items-center rounded-lg border bg-card">
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => onChange(Math.max(1, value - 1))}
-        disabled={value <= 1}
-        aria-label="Diminuer la quantité"
-      >
-        <MinusIcon />
-      </Button>
-      <label htmlFor="quantity" className="sr-only">
-        Quantité
-      </label>
-      <input
-        id="quantity"
-        type="number"
-        inputMode="numeric"
-        min={1}
-        max={max}
-        value={value}
-        onChange={(event) => {
-          const next = Math.trunc(Number(event.target.value))
-          if (Number.isFinite(next)) onChange(Math.min(max, Math.max(1, next)))
-        }}
-        className="w-12 [appearance:textfield] bg-transparent text-center font-medium outline-none [&::-webkit-inner-spin-button]:appearance-none"
-      />
-      <Button
-        type="button"
-        variant="ghost"
-        size="icon"
-        onClick={() => onChange(Math.min(max, value + 1))}
-        disabled={value >= max}
-        aria-label="Augmenter la quantité"
-      >
-        <PlusIcon />
-      </Button>
     </div>
   )
 }
@@ -211,6 +160,11 @@ function ProductView({ slug }: { slug: string | undefined }) {
   const product = useProductDetails(slug)
   const others = useOtherArtisanProducts(product.data?.artisan.slug, product.data?.id)
   const [quantity, setQuantity] = useState(1)
+  const navigate = useNavigate()
+  const addToCart = useCartStore((state) => state.add)
+  const inCart = useCartStore(
+    (state) => state.items.find((item) => item.productId === product.data?.id)?.quantity ?? 0,
+  )
 
   // +1 vue, une seule fois par produit affiché (ignorée pour le propriétaire)
   const viewed = useRef<number | null>(null)
@@ -243,6 +197,33 @@ function ProductView({ slug }: { slug: string | undefined }) {
   const p = product.data
   const outOfStock = p.stock === 0
   const place = [p.artisan.city, p.artisan.governorate].filter(Boolean).join(', ')
+  // Quantité encore ajoutable compte tenu de ce qui est déjà dans le panier
+  const remaining = Math.max(0, p.stock - inCart)
+
+  function handleAddToCart() {
+    const wanted = Math.min(quantity, remaining)
+    const added = addToCart(
+      {
+        productId: p.id,
+        slug: p.slug,
+        name: p.name,
+        price: p.price,
+        imagePath: p.images[0] ?? p.imagePath,
+        artisanSlug: p.artisan.slug,
+        artisanName: p.artisan.shop_name,
+        stock: p.stock,
+      },
+      wanted,
+    )
+    setQuantity(1)
+    if (added === 0) {
+      toast.info('Tout le stock disponible est déjà dans votre panier.')
+      return
+    }
+    toast.success(`${added} × « ${p.name} » ajouté${added > 1 ? 's' : ''} au panier.`, {
+      action: { label: 'Voir le panier', onClick: () => navigate('/panier') },
+    })
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-12 px-4 py-8 sm:px-6">
@@ -296,20 +277,30 @@ function ProductView({ slug }: { slug: string | undefined }) {
               : `En stock : ${p.stock} disponible${p.stock > 1 ? 's' : ''}`}
           </p>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {!outOfStock && (
-              <QuantitySelector value={quantity} max={p.stock} onChange={setQuantity} />
+          <div className="space-y-2">
+            <div className="flex flex-wrap items-center gap-3">
+              {!outOfStock && remaining > 0 && (
+                <QuantityStepper
+                  value={Math.min(quantity, remaining)}
+                  max={remaining}
+                  onChange={setQuantity}
+                />
+              )}
+              <Button size="lg" disabled={outOfStock || remaining === 0} onClick={handleAddToCart}>
+                <ShoppingBagIcon />
+                {outOfStock ? 'Indisponible' : 'Ajouter au panier'}
+              </Button>
+              <FavoriteButton productId={p.id} productName={p.name} withLabel />
+            </div>
+            {inCart > 0 && (
+              <p className="text-sm text-muted-foreground">
+                Déjà {inCart} dans{' '}
+                <Link to="/panier" className="text-sidi-bou hover:underline">
+                  votre panier
+                </Link>
+                {remaining === 0 && ' (tout le stock disponible)'}.
+              </p>
             )}
-            <Button
-              size="lg"
-              disabled={outOfStock}
-              // Le panier est réalisé en Phase 5
-              onClick={() => toast.info('Le panier sera bientôt disponible.')}
-            >
-              <ShoppingBagIcon />
-              {outOfStock ? 'Indisponible' : 'Ajouter au panier'}
-            </Button>
-            <FavoriteButton productId={p.id} productName={p.name} withLabel />
           </div>
 
           <p className="rounded-xl bg-secondary px-4 py-3 text-sm">

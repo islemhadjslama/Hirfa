@@ -90,3 +90,16 @@ Décisions prises pendant le développement sur des points non couverts (ou ambi
 | D-62 | Favoris sur les cartes (CAT-5) | Le bouton cœur fonctionne dès maintenant : visiteur → `/connexion?redirect=…` ; client → ajout ou retrait (mise à jour optimiste) ; artisan ou admin → message « réservés aux clients ». La page `/compte/favoris` reste en Phase 7. | CAT-5 et CLI-5. Les tables et la RLS existent déjà. |
 | D-63 | Compteur de vues | `increment_product_view` est appelé une fois par affichage de fiche (garde par `useRef`, compatible StrictMode). | CAT-6. La fonction SQL ignore le propriétaire. |
 | D-64 | Icônes réseaux sociaux | Lucide 1.x ne fournit plus les logos de marques : libellés « Facebook », « Instagram », « WhatsApp » avec une icône de lien. | Pas de dépendance ni de logo téléchargé. |
+
+## Phase 5 — Panier et commande
+
+| # | Sujet | Décision | Raison |
+|---|---|---|---|
+| D-65 | Stockage du panier | Zustand `persist` dans `localStorage` (clé `hirfa-cart`, version 1). Chaque ligne garde un instantané du produit (nom, prix, image, artisan, stock) et la quantité. Le panier n'est pas lié au compte et n'est pas vidé à la déconnexion. | PAN-1 : panier accessible sans compte. |
+| D-66 | Fraîcheur des données | À l'affichage du panier et du checkout, les produits sont relus dans `catalog_products` (RM-1). Prix, nom et stock sont mis à jour dans le store, et les quantités ramenées au stock disponible. Un produit absent de la vue (masqué, brouillon, artisan suspendu…) ou en rupture est signalé, et la commande reste bloquée tant qu'il est dans le panier. | Évite une erreur évitable au moment de commander. Le serveur revérifie de toute façon (place_order). |
+| D-67 | Quantités | Plafonnées au stock connu, à l'ajout comme dans le panier. La fiche produit indique « Déjà N dans votre panier » et ne propose que la quantité restante. | PAN-2 : « dans la limite du stock ». |
+| D-68 | Totaux affichés | Calculés côté client (frais de livraison × nombre d'artisans ayant au moins une ligne commandable). Ils restent **indicatifs** : `place_order` recalcule tout avec les prix et les frais du moment. | RM-3 : le serveur fait foi. |
+| D-69 | PAN-3 | Un visiteur qui clique « Passer la commande » est envoyé vers `/connexion?redirect=%2Fcommande`. Un artisan ou un admin voit « Seuls les clients peuvent commander » et le bouton est désactivé. La route `/commande` reste protégée par `RequireRole client`. | Message demandé par PAN-3, sécurité par la RPC. |
+| D-70 | Checkout | Formulaire pré-rempli depuis le profil (nom, téléphone, gouvernorat, ville, adresse), téléphone normalisé à 8 chiffres. L'adresse par défaut du profil n'est **pas** modifiée par la commande (elle se modifie dans `/compte`, Phase 7). | PAN-4, CLI-1. |
+| D-71 | Erreur de commande | Le message de la RPC (déjà en français, nommant le produit) s'affiche en haut du formulaire, et le panier est conservé. Après la commande, qu'elle réussisse ou échoue, le catalogue, les fiches produit et le panier sont rafraîchis, car le stock a changé. | PAN-5. |
+| D-72 | Après succès | Redirection vers `/commande/confirmation/:id` (avec `replace`, pour qu'un retour arrière ne renvoie pas le formulaire), **puis** vidage du panier. La page de confirmation relit la commande en base (numéro, colis par artisan, totaux, adresse, prochaines étapes). | PAN-6. |

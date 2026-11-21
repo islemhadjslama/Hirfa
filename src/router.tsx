@@ -10,7 +10,9 @@ import {
   ArtisanPendingPage,
   ArtisanPublicPage,
   ArtisansPage,
+  CartPage,
   CatalogPage,
+  CheckoutPage,
   ProductPage,
   ArtisanProductFormPage,
   ArtisanProductsPage,
@@ -20,6 +22,7 @@ import {
   HomePage,
   LoginPage,
   NotFoundPage,
+  OrderConfirmationPage,
   RegisterArtisanPage,
   RegisterClientPage,
   ResetPasswordPage,
@@ -43,7 +46,7 @@ export const router = createBrowserRouter([
           { path: 'produits/:slug', element: <ProductPage /> },
           { path: 'artisans', element: <ArtisansPage /> },
           { path: 'artisans/:slug', element: <ArtisanPublicPage /> },
-          soon('panier', 'Mon panier'),
+          { path: 'panier', element: <CartPage /> },
 
           // Visiteurs uniquement (un utilisateur connecté est redirigé vers son espace)
           {
@@ -61,8 +64,8 @@ export const router = createBrowserRouter([
           {
             element: <RequireRole roles={['client']} />,
             children: [
-              soon('commande', 'Commande'),
-              soon('commande/confirmation/:id', 'Confirmation de commande'),
+              { path: 'commande', element: <CheckoutPage /> },
+              { path: 'commande/confirmation/:id', element: <OrderConfirmationPage /> },
               soon('compte', 'Mon compte'),
               soon('compte/commandes', 'Mes commandes'),
               soon('compte/commandes/:id', 'Détail de la commande'),

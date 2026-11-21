@@ -13,6 +13,11 @@ export const ProductPage = lazy(() => import('@/pages/public/ProductPage'))
 export const ArtisansPage = lazy(() => import('@/pages/public/ArtisansPage'))
 export const ArtisanPublicPage = lazy(() => import('@/pages/public/ArtisanPublicPage'))
 
+// Panier et commande
+export const CartPage = lazy(() => import('@/pages/public/CartPage'))
+export const CheckoutPage = lazy(() => import('@/pages/client/CheckoutPage'))
+export const OrderConfirmationPage = lazy(() => import('@/pages/client/OrderConfirmationPage'))
+
 // Authentification
 export const LoginPage = lazy(() => import('@/pages/public/LoginPage'))
 export const RegisterClientPage = lazy(() => import('@/pages/public/RegisterClientPage'))

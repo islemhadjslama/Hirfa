@@ -12,6 +12,7 @@ import { accountLinksFor } from '@/features/auth/account-links'
 import { useSignOut } from '@/features/auth/useSignOut'
 import { useProfile } from '@/hooks/useProfile'
 import { cn } from '@/lib/utils'
+import { selectCartCount, useCartStore } from '@/stores/cart'
 
 const NAV_LINKS = [
   { to: '/catalogue', label: 'Catalogue' },
@@ -32,6 +33,7 @@ export function Header() {
   const closeMenu = () => setMenuOpen(false)
   const { profile } = useProfile()
   const handleSignOut = useSignOut()
+  const cartCount = useCartStore(selectCartCount)
 
   const mainLinks = profile ? NAV_LINKS : [...NAV_LINKS, GUEST_LINK]
   const accountLinks = profile
@@ -97,9 +99,24 @@ export function Header() {
         <SearchBar id="header-search" className="ml-auto hidden w-full max-w-xs lg:block" />
 
         <div className="ml-auto flex items-center gap-1 lg:ml-2">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to="/panier" aria-label="Panier">
+          <Button variant="ghost" size="icon" asChild className="relative">
+            <Link
+              to="/panier"
+              aria-label={
+                cartCount > 0
+                  ? `Panier : ${cartCount} article${cartCount > 1 ? 's' : ''}`
+                  : 'Panier vide'
+              }
+            >
               <ShoppingBagIcon />
+              {cartCount > 0 && (
+                <span
+                  className="absolute -top-0.5 -right-0.5 flex h-4.5 min-w-4.5 items-center justify-center rounded-full bg-primary px-1 text-[10px] leading-none font-semibold text-primary-foreground"
+                  aria-hidden="true"
+                >
+                  {cartCount > 99 ? '99+' : cartCount}
+                </span>
+              )}
             </Link>
           </Button>
           <UserMenu />
