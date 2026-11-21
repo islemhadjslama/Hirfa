@@ -1,11 +1,10 @@
 // Traductions françaises des valeurs techniques (statuts, rôles).
-// Les types seront remplacés par ceux de `src/types/database.ts` après la Phase 1.
+import type { Enums } from '@/types/database'
 
-export type UserRole = 'client' | 'artisan' | 'admin'
-export type ArtisanStatus = 'pending' | 'approved' | 'rejected' | 'suspended'
-export type ProductStatus = 'draft' | 'published'
-export type SubOrderStatus =
-  'pending' | 'confirmed' | 'preparing' | 'shipped' | 'delivered' | 'cancelled'
+export type UserRole = Enums<'user_role'>
+export type ArtisanStatus = Enums<'artisan_status'>
+export type ProductStatus = Enums<'product_status'>
+export type SubOrderStatus = Enums<'sub_order_status'>
 
 export const USER_ROLE_LABELS: Record<UserRole, string> = {
   client: 'Client',

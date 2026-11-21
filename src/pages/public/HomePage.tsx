@@ -13,7 +13,9 @@ import { Link } from 'react-router'
 import { EmptyState } from '@/components/common/EmptyState'
 import { HeroIllustration } from '@/components/common/HeroIllustration'
 import { Button } from '@/components/ui/button'
+import { homePathFor } from '@/features/auth/redirects'
 import { HOME_CATEGORIES } from '@/features/catalog/home-categories'
+import { useProfile } from '@/hooks/useProfile'
 
 const STEPS = [
   {
@@ -66,6 +68,8 @@ function SectionHeading({
 }
 
 export default function HomePage() {
+  const { profile } = useProfile()
+
   return (
     <>
       {/* ACC-1 — Hero */}
@@ -113,12 +117,23 @@ export default function HomePage() {
               commandes de toute la Tunisie. Sans commission.
             </p>
             <div className="mt-auto flex flex-wrap items-center gap-4">
-              <Button size="lg" variant="secondary" asChild>
-                <Link to="/artisan/inscription">Ouvrir ma boutique</Link>
-              </Button>
-              <Link to="/connexion" className="text-sm font-medium underline underline-offset-4">
-                J’ai déjà un compte
-              </Link>
+              {profile?.role === 'artisan' ? (
+                <Button size="lg" variant="secondary" asChild>
+                  <Link to={homePathFor(profile)}>Accéder à mon espace</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button size="lg" variant="secondary" asChild>
+                    <Link to="/artisan/inscription">Ouvrir ma boutique</Link>
+                  </Button>
+                  <Link
+                    to="/connexion"
+                    className="text-sm font-medium underline underline-offset-4"
+                  >
+                    J’ai déjà un compte
+                  </Link>
+                </>
+              )}
             </div>
           </article>
           <article className="flex flex-col gap-4 rounded-2xl bg-sidi-bou p-6 text-white sm:p-8">

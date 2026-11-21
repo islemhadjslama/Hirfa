@@ -1,10 +1,11 @@
 import type { LucideIcon } from 'lucide-react'
 import { ExternalLinkIcon, MenuIcon } from 'lucide-react'
 import { Suspense, useState } from 'react'
-import { Link, NavLink, Outlet, ScrollRestoration } from 'react-router'
+import { Link, NavLink, Outlet } from 'react-router'
 
 import { Logo } from '@/components/common/Logo'
 import { PageLoader } from '@/components/common/PageLoader'
+import { UserMenu } from '@/components/layout/UserMenu'
 import { Button } from '@/components/ui/button'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
@@ -91,13 +92,16 @@ export function DashboardLayout({ title, homePath, navItems }: DashboardLayoutPr
 
           <p className="truncate font-heading text-lg font-semibold">{title}</p>
 
-          <Button variant="outline" size="sm" asChild className="ml-auto">
-            <Link to="/">
-              <ExternalLinkIcon />
-              <span className="hidden sm:inline">Voir le site</span>
-              <span className="sr-only sm:hidden">Voir le site</span>
-            </Link>
-          </Button>
+          <div className="ml-auto flex items-center gap-2">
+            <Button variant="ghost" size="sm" asChild>
+              <Link to="/">
+                <ExternalLinkIcon />
+                <span className="hidden sm:inline">Voir le site</span>
+                <span className="sr-only sm:hidden">Voir le site</span>
+              </Link>
+            </Button>
+            <UserMenu />
+          </div>
         </header>
 
         <main className="flex-1 p-4 sm:p-6">
@@ -106,7 +110,6 @@ export function DashboardLayout({ title, homePath, navItems }: DashboardLayoutPr
           </Suspense>
         </main>
       </div>
-      <ScrollRestoration />
     </div>
   )
 }

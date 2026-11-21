@@ -1,5 +1,5 @@
 import { Suspense } from 'react'
-import { Outlet, ScrollRestoration } from 'react-router'
+import { Outlet } from 'react-router'
 
 import { PageLoader } from '@/components/common/PageLoader'
 import { Footer } from '@/components/layout/Footer'
@@ -21,7 +21,6 @@ export function PublicLayout() {
         </Suspense>
       </main>
       <Footer />
-      <ScrollRestoration />
     </div>
   )
 }

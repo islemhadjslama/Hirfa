@@ -74,6 +74,14 @@ src/
   router.tsx    toutes les routes
 ```
 
+## Créer un compte administrateur
+
+Le rôle `admin` ne peut pas être obtenu par l'inscription. Inscris-toi normalement, puis exécute dans le **SQL Editor** de Supabase :
+
+```sql
+update profiles set role = 'admin' where email = 'ton.email@exemple.com';
+```
+
 ## Comptes de démonstration
 
 Ils seront créés par `npm run seed` (Phase 9) :
@@ -88,7 +96,7 @@ Ils seront créés par `npm run seed` (Phase 9) :
 
 - [x] Phase 0 — Initialisation (projet, layouts, accueil statique)
 - [x] Phase 1 — Base de données
-- [ ] Phase 2 — Authentification
+- [x] Phase 2 — Authentification
 - [ ] Phase 3 — Espace artisan
 - [ ] Phase 4 — Catalogue public
 - [ ] Phase 5 — Panier et commande

@@ -1,18 +1,24 @@
-import { MenuIcon, ShoppingBagIcon, UserIcon } from 'lucide-react'
+import { LogOutIcon, MenuIcon, ShoppingBagIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Link, NavLink } from 'react-router'
 
 import { Logo } from '@/components/common/Logo'
 import { SearchBar } from '@/components/layout/SearchBar'
+import { UserMenu } from '@/components/layout/UserMenu'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
+import { accountLinksFor } from '@/features/auth/account-links'
+import { useSignOut } from '@/features/auth/useSignOut'
+import { useProfile } from '@/hooks/useProfile'
 import { cn } from '@/lib/utils'
 
 const NAV_LINKS = [
   { to: '/catalogue', label: 'Catalogue' },
   { to: '/artisans', label: 'Artisans' },
-  { to: '/artisan/inscription', label: 'Devenir artisan' },
 ]
+
+const GUEST_LINK = { to: '/artisan/inscription', label: 'Devenir artisan' }
 
 function navLinkClass({ isActive }: { isActive: boolean }) {
   return cn(
@@ -24,6 +30,16 @@ function navLinkClass({ isActive }: { isActive: boolean }) {
 export function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
   const closeMenu = () => setMenuOpen(false)
+  const { profile } = useProfile()
+  const handleSignOut = useSignOut()
+
+  const mainLinks = profile ? NAV_LINKS : [...NAV_LINKS, GUEST_LINK]
+  const accountLinks = profile
+    ? accountLinksFor(profile)
+    : [
+        { to: '/connexion', label: 'Connexion' },
+        { to: '/inscription', label: 'Créer un compte' },
+      ]
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">
@@ -40,14 +56,30 @@ export function Header() {
               <Logo />
             </SheetHeader>
             <nav className="flex flex-col gap-1 px-4" aria-label="Navigation mobile">
-              {NAV_LINKS.map((link) => (
+              {mainLinks.map((link) => (
                 <NavLink key={link.to} to={link.to} className={navLinkClass} onClick={closeMenu}>
                   {link.label}
                 </NavLink>
               ))}
-              <NavLink to="/connexion" className={navLinkClass} onClick={closeMenu}>
-                Connexion
-              </NavLink>
+              <Separator className="my-2" />
+              {accountLinks.map((link) => (
+                <NavLink key={link.to} to={link.to} className={navLinkClass} onClick={closeMenu}>
+                  {link.label}
+                </NavLink>
+              ))}
+              {profile && (
+                <button
+                  type="button"
+                  className="flex items-center gap-2 rounded-md px-3 py-2 text-left text-sm font-medium text-foreground/80 hover:text-primary"
+                  onClick={() => {
+                    closeMenu()
+                    void handleSignOut()
+                  }}
+                >
+                  <LogOutIcon className="size-4" aria-hidden="true" />
+                  Déconnexion
+                </button>
+              )}
             </nav>
           </SheetContent>
         </Sheet>
@@ -55,7 +87,7 @@ export function Header() {
         <Logo />
 
         <nav className="ml-4 hidden items-center gap-1 md:flex" aria-label="Navigation principale">
-          {NAV_LINKS.map((link) => (
+          {mainLinks.map((link) => (
             <NavLink key={link.to} to={link.to} className={navLinkClass}>
               {link.label}
             </NavLink>
@@ -70,17 +102,7 @@ export function Header() {
               <ShoppingBagIcon />
             </Link>
           </Button>
-          <Button asChild className="hidden sm:inline-flex">
-            <Link to="/connexion">
-              <UserIcon />
-              Connexion
-            </Link>
-          </Button>
-          <Button variant="ghost" size="icon" asChild className="sm:hidden">
-            <Link to="/connexion" aria-label="Connexion">
-              <UserIcon />
-            </Link>
-          </Button>
+          <UserMenu />
         </div>
       </div>
 

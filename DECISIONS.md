@@ -18,7 +18,7 @@ Décisions prises pendant le développement sur des points non couverts (ou ambi
 | D-10 | Types Supabase | `src/types/database.ts` est un fichier provisoire (schéma vide) jusqu'à `npm run db:types`. Les types de statuts sont déclarés dans `src/lib/labels.ts` en attendant. | Le build doit passer avant que la base existe. |
 | D-11 | Client Supabase | `src/lib/supabase.ts` lève une erreur en français si les variables `VITE_*` manquent. Il n'est encore importé par aucune page, donc l'accueil fonctionne même sans `.env.local`. | Erreur claire plutôt qu'un échec obscur. |
 | D-12 | Supabase local | `supabase/config.toml` généré par `supabase init`. `site_url` et les URL de redirection pointent vers `http://localhost:5173`. | Cohérent avec le guide d'installation. |
-| D-13 | `/artisan/en-attente` | Rattachée provisoirement au layout public. | À revoir en Phase 2 avec les gardes de routes. |
+| D-13 | `/artisan/en-attente` | Rattachée provisoirement au layout public ; **déplacée dans l'espace artisan en Phase 2** (voir D-37). | À revoir en Phase 2 avec les gardes de routes. |
 
 ## Phase 1 — Base de données
 
@@ -43,3 +43,17 @@ Décisions prises pendant le développement sur des points non couverts (ou ambi
 | D-30 | Tests de la base | `npm run db:test` exécute les migrations, le seed et 101 scénarios (RLS, RPC, triggers, storage) dans **PGlite** (Postgres en WebAssembly, devDependency), avec des bouchons pour `auth` et `storage`. | Pas de Docker sur le poste. Cela permet de valider le SQL avant `db push`. |
 | D-31 | Nom des auteurs d'avis | `profiles` n'est pas lisible publiquement. L'affichage du nom des auteurs d'avis sera traité en Phase 7 (vue ou colonne dédiée). | Ne pas exposer email et téléphone. |
 | D-32 | Droits (GRANT) explicites | La migration `grants` accorde le strict nécessaire : `anon` en lecture sur le catalogue ; `authenticated` en lecture partout, et en écriture seulement là où une politique RLS l'autorise ; aucune écriture directe sur les tables de commande ; `service_role` a tout. Les fonctions helpers et les RPC sont accordées explicitement. `db:test` ne donne plus aucun droit par défaut. | Les projets Supabase récents n'accordent plus automatiquement les droits aux rôles `anon` et `authenticated`. Constaté après le premier push : « permission denied for table ». |
+
+## Phase 2 — Authentification
+
+| # | Sujet | Décision | Raison |
+|---|---|---|---|
+| D-33 | État de session | Store Zustand `src/stores/auth.ts` alimenté par `onAuthStateChange` (`initAuth()` dans `main.tsx`), sans Context React. Le profil (avec la boutique, via `artisan_profiles(*)`) est chargé par TanStack Query dans `useProfile`. | Simple et sans provider. Une seule requête pour le profil et la boutique. |
+| D-34 | Redirection après connexion ou inscription | Elle est faite par `GuestOnlyRoute` dès que le profil est chargé, et non par les pages elles-mêmes : une seule source de vérité (`postLoginPath`). Le paramètre `?redirect=` n'est suivi que pour un client, et uniquement vers un chemin interne. | Respecte AUTH-3 et évite les redirections ouvertes. |
+| D-35 | Compte désactivé (AUTH-6) | `RootLayout` déconnecte l'utilisateur dès que son profil indique `is_active = false`, à la connexion ou lors d'un rafraîchissement (au retour sur l'onglet, et toutes les 60 s). Les RPC et la RLS refusent déjà tout à un compte désactivé. | Pas de Realtime nécessaire. |
+| D-36 | Gardes de routes | `RequireRole roles=[…]` (+ `requireApproved` pour l'artisan) enveloppe chaque espace. Visiteur → `/connexion?redirect=…` ; mauvais rôle → page d'accueil de son propre espace. Ce n'est qu'un confort d'interface : la sécurité reste assurée par la RLS. | AUTH-7. |
+| D-37 | Artisan non approuvé | `/artisan/en-attente` et `/artisan/boutique` sont dans l'espace artisan, avec un menu réduit. Les autres pages exigent `approved`. Un artisan **suspendu** n'y accède pas non plus : il voit ses sous-commandes en cours au niveau des données (RLS), mais pas dans l'interface en V1. | ART-1 (« il n'accède qu'à cette page et à `/artisan/boutique` »). |
+| D-38 | Resoumission (artisan refusé) | Le bouton « Modifier ma boutique et resoumettre » repasse le statut à `pending` (autorisé par le trigger RM-9) puis ouvre `/artisan/boutique`. | ART-1, en une seule action. |
+| D-39 | Messages d'erreur | `src/lib/errors.ts` traduit les codes Supabase Auth et les erreurs Postgres natives. Les exceptions levées par nos fonctions SQL, déjà en français, sont affichées telles quelles. « Mot de passe oublié » affiche le même message que le compte existe ou non. | UI 100 % française. Pas de fuite d'information sur l'existence des comptes. |
+| D-40 | Formulaires | `TextField` et `SelectField` (`<select>` natif via shadcn `native-select`) avec label, aide et erreur reliés par `aria-describedby`. Mot de passe : 8 caractères minimum. Téléphone : 8 chiffres, espaces, points ou tirets tolérés puis retirés à l'envoi. | Accessibilité, sélecteur natif sur mobile. Cohérent avec `place_order`. |
+| D-41 | Confirmation d'email | Gérée si elle est réactivée : l'inscription affiche alors « Vérifiez votre boîte mail » au lieu de rediriger. | Le code reste valide quel que soit le réglage Supabase. |
