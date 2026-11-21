@@ -11,10 +11,15 @@ import {
 import { Link } from 'react-router'
 
 import { EmptyState } from '@/components/common/EmptyState'
+import { ArtisanCard, ArtisanCardSkeleton } from '@/components/common/ArtisanCard'
+import { ErrorState } from '@/components/common/ErrorState'
 import { HeroIllustration } from '@/components/common/HeroIllustration'
+import { ProductGrid } from '@/components/common/ProductCard'
+import { Skeleton } from '@/components/ui/skeleton'
 import { Button } from '@/components/ui/button'
 import { homePathFor } from '@/features/auth/redirects'
-import { HOME_CATEGORIES } from '@/features/catalog/home-categories'
+import { useCategories, useHomeProducts, useRecentArtisans } from '@/features/catalog/api'
+import { categoryIcon } from '@/features/catalog/home-categories'
 import { useProfile } from '@/hooks/useProfile'
 
 const STEPS = [
@@ -69,6 +74,9 @@ function SectionHeading({
 
 export default function HomePage() {
   const { profile } = useProfile()
+  const categories = useCategories()
+  const homeProducts = useHomeProducts()
+  const artisans = useRecentArtisans()
 
   return (
     <>
@@ -159,45 +167,101 @@ export default function HomePage() {
             subtitle="Tous les savoir-faire de l’artisanat tunisien"
             link={{ to: '/catalogue', label: 'Tout voir' }}
           />
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-            {HOME_CATEGORIES.map(({ name, slug, icon: Icon }) => (
-              <li key={slug}>
-                <Link
-                  to={`/catalogue?categorie=${slug}`}
-                  className="group flex h-full flex-col items-center gap-3 rounded-2xl border bg-card p-4 text-center transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
-                >
-                  <span className="flex size-14 items-center justify-center rounded-full bg-secondary text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
-                    <Icon className="size-7" aria-hidden="true" />
-                  </span>
-                  <span className="text-sm font-medium">{name}</span>
-                </Link>
-              </li>
-            ))}
-          </ul>
+          {categories.isError ? (
+            <ErrorState onRetry={() => void categories.refetch()} />
+          ) : (
+            <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
+              {categories.isPending
+                ? Array.from({ length: 6 }, (_, index) => (
+                    <li key={index}>
+                      <Skeleton className="h-32 rounded-2xl" />
+                    </li>
+                  ))
+                : categories.data.map((category) => {
+                    const Icon = categoryIcon(category.slug)
+                    return (
+                      <li key={category.slug}>
+                        <Link
+                          to={`/catalogue?categorie=${category.slug}`}
+                          className="group flex h-full flex-col items-center gap-3 rounded-2xl border bg-card p-4 text-center transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md"
+                        >
+                          {category.image_url ? (
+                            <img
+                              src={category.image_url}
+                              alt=""
+                              loading="lazy"
+                              className="size-14 rounded-full object-cover"
+                            />
+                          ) : (
+                            <span className="flex size-14 items-center justify-center rounded-full bg-secondary text-primary transition group-hover:bg-primary group-hover:text-primary-foreground">
+                              <Icon className="size-7" aria-hidden="true" />
+                            </span>
+                          )}
+                          <span className="text-sm font-medium">{category.name}</span>
+                        </Link>
+                      </li>
+                    )
+                  })}
+            </ul>
+          )}
         </section>
 
-        {/* ACC-4 — Produits mis en avant (dynamique en Phase 4) */}
+        {/* ACC-4 — Produits mis en avant (à défaut : dernières créations) */}
         <section aria-labelledby="produits-vedette">
-          <h2 id="produits-vedette" className="mb-6 text-2xl font-semibold sm:text-3xl">
-            Coups de cœur
-          </h2>
-          <EmptyState
-            icon={PackageIcon}
-            title="Bientôt nos produits mis en avant"
-            description="Les créations sélectionnées par l’équipe Hirfa apparaîtront ici."
+          <SectionHeading
+            id="produits-vedette"
+            title={homeProducts.data?.kind === 'recent' ? 'Dernières créations' : 'Coups de cœur'}
+            subtitle={
+              homeProducts.data?.kind === 'recent'
+                ? 'Les pièces ajoutées récemment par nos artisans'
+                : 'Une sélection de l’équipe Hirfa'
+            }
+            link={{ to: '/catalogue', label: 'Voir le catalogue' }}
           />
+          {homeProducts.isError ? (
+            <ErrorState onRetry={() => void homeProducts.refetch()} />
+          ) : homeProducts.data?.products.length === 0 ? (
+            <EmptyState
+              icon={PackageIcon}
+              title="Le catalogue se prépare"
+              description="Les premières créations de nos artisans arrivent bientôt."
+            />
+          ) : (
+            <ProductGrid products={homeProducts.data?.products} loading={homeProducts.isPending} />
+          )}
         </section>
 
-        {/* ACC-5 — Artisans mis en avant (dynamique en Phase 4) */}
+        {/* ACC-5 — Les 6 artisans approuvés les plus récents */}
         <section aria-labelledby="artisans-vedette">
-          <h2 id="artisans-vedette" className="mb-6 text-2xl font-semibold sm:text-3xl">
-            Nouveaux artisans
-          </h2>
-          <EmptyState
-            icon={StoreIcon}
-            title="Bientôt nos artisans"
-            description="Les dernières boutiques ouvertes sur Hirfa apparaîtront ici."
+          <SectionHeading
+            id="artisans-vedette"
+            title="Nouveaux artisans"
+            subtitle="Les dernières boutiques ouvertes sur Hirfa"
+            link={{ to: '/artisans', label: 'Tous les artisans' }}
           />
+          {artisans.isError ? (
+            <ErrorState onRetry={() => void artisans.refetch()} />
+          ) : artisans.data?.length === 0 ? (
+            <EmptyState
+              icon={StoreIcon}
+              title="Bientôt nos artisans"
+              description="Les premières boutiques sont en cours de validation."
+            />
+          ) : (
+            <ul className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {artisans.isPending
+                ? Array.from({ length: 3 }, (_, index) => (
+                    <li key={index}>
+                      <ArtisanCardSkeleton />
+                    </li>
+                  ))
+                : artisans.data.map((artisan) => (
+                    <li key={artisan.id}>
+                      <ArtisanCard artisan={artisan} />
+                    </li>
+                  ))}
+            </ul>
+          )}
         </section>
 
         {/* ACC-6 — Comment ça marche */}

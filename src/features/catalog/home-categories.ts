@@ -3,6 +3,7 @@ import {
   AmphoraIcon,
   BriefcaseIcon,
   CookingPotIcon,
+  FlowerIcon,
   GemIcon,
   LampIcon,
   LeafIcon,
@@ -13,27 +14,21 @@ import {
   WineIcon,
 } from 'lucide-react'
 
-export type HomeCategory = {
-  name: string
-  slug: string
-  icon: LucideIcon
+/** Icône de chaque catégorie du seed, utilisée quand la catégorie n'a pas d'image. */
+const CATEGORY_ICONS: Record<string, LucideIcon> = {
+  'poterie-ceramique': AmphoraIcon,
+  'tapis-tissage': SpoolIcon,
+  bijoux: GemIcon,
+  'cuir-maroquinerie': BriefcaseIcon,
+  vannerie: ShoppingBasketIcon,
+  'bois-olivier': TreeDeciduousIcon,
+  'broderie-textile': ScissorsIcon,
+  'cuivre-dinanderie': CookingPotIcon,
+  'verre-souffle': WineIcon,
+  decoration: LampIcon,
+  'savons-cosmetiques-naturels': LeafIcon,
 }
 
-/**
- * Catégories affichées sur l'accueil STATIQUE (Phase 0).
- * Les slugs correspondent à ceux de `supabase/seed.sql` (Phase 1).
- * En Phase 4, cette liste sera remplacée par les catégories lues en base.
- */
-export const HOME_CATEGORIES: HomeCategory[] = [
-  { name: 'Poterie & céramique', slug: 'poterie-ceramique', icon: AmphoraIcon },
-  { name: 'Tapis & tissage', slug: 'tapis-tissage', icon: SpoolIcon },
-  { name: 'Bijoux', slug: 'bijoux', icon: GemIcon },
-  { name: 'Cuir & maroquinerie', slug: 'cuir-maroquinerie', icon: BriefcaseIcon },
-  { name: 'Vannerie', slug: 'vannerie', icon: ShoppingBasketIcon },
-  { name: "Bois d'olivier", slug: 'bois-olivier', icon: TreeDeciduousIcon },
-  { name: 'Broderie & textile', slug: 'broderie-textile', icon: ScissorsIcon },
-  { name: 'Cuivre & dinanderie', slug: 'cuivre-dinanderie', icon: CookingPotIcon },
-  { name: 'Verre soufflé', slug: 'verre-souffle', icon: WineIcon },
-  { name: 'Décoration', slug: 'decoration', icon: LampIcon },
-  { name: 'Savons & cosmétiques naturels', slug: 'savons-cosmetiques-naturels', icon: LeafIcon },
-]
+export function categoryIcon(slug: string): LucideIcon {
+  return CATEGORY_ICONS[slug] ?? FlowerIcon
+}

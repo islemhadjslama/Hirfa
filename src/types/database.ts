@@ -177,6 +177,13 @@ export type Database = {
             foreignKeyName: "favorites_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "favorites_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -211,6 +218,13 @@ export type Database = {
           unit_price?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_items_product_id_fkey"
             columns: ["product_id"]
@@ -306,6 +320,13 @@ export type Database = {
           product_id?: number
         }
         Relationships: [
+          {
+            foreignKeyName: "product_images_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "product_images_product_id_fkey"
             columns: ["product_id"]
@@ -469,6 +490,13 @@ export type Database = {
             foreignKeyName: "reviews_product_id_fkey"
             columns: ["product_id"]
             isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
             referencedRelation: "products"
             referencedColumns: ["id"]
           },
@@ -572,6 +600,46 @@ export type Database = {
       }
     }
     Views: {
+      catalog_products: {
+        Row: {
+          artisan_city: string | null
+          artisan_governorate: string | null
+          artisan_id: string | null
+          artisan_name: string | null
+          artisan_slug: string | null
+          avg_rating: number | null
+          category_id: number | null
+          category_name: string | null
+          category_slug: string | null
+          created_at: string | null
+          description: string | null
+          id: number | null
+          image_path: string | null
+          is_featured: boolean | null
+          name: string | null
+          price: number | null
+          reviews_count: number | null
+          search_text: string | null
+          slug: string | null
+          stock: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "products_artisan_id_fkey"
+            columns: ["artisan_id"]
+            isOneToOne: false
+            referencedRelation: "artisan_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "products_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_ratings: {
         Row: {
           avg_rating: number | null
@@ -579,6 +647,13 @@ export type Database = {
           reviews_count: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "reviews_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "catalog_products"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "reviews_product_id_fkey"
             columns: ["product_id"]
@@ -616,6 +691,17 @@ export type Database = {
       place_order: {
         Args: { p_items: Json; p_shipping: Json }
         Returns: number
+      }
+      product_reviews: {
+        Args: { p_product_id: number }
+        Returns: {
+          author_name: string
+          comment: string
+          created_at: string
+          id: number
+          rating: number
+          updated_at: string
+        }[]
       }
       slugify: { Args: { p_value: string }; Returns: string }
       unique_artisan_slug: {

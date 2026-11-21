@@ -806,5 +806,94 @@ ok(
   'client upload son avatar',
 )
 
+console.log('\nCatalogue (Phase 4)')
+const art4 = await signup('a4@x.tn', {
+  role: 'artisan',
+  full_name: 'Hela',
+  shop_name: 'Atelier Hela',
+})
+await as(admin, `update artisan_profiles set status='approved' where id=$1`, [art4])
+const cat2 = (await q(`select id from categories where slug='bijoux'`))[0].id
+const insert4 = async (name, extra = '') =>
+  (
+    await as(
+      art4,
+      `insert into products (artisan_id, category_id, name, description, price, stock, status) values ($1,$2,$3,'Pièce émaillée à la main',$4,2,${extra || "'published'"}) returning id`,
+      [art4, cat, name, 30],
+    )
+  )[0].id
+const pVisible = await insert4('Céramique émaillée')
+const pDraft4 = await insert4('Brouillon caché', "'draft'")
+const pBijou = (
+  await as(
+    art4,
+    `insert into products (artisan_id, category_id, name, price, stock, status) values ($1,$2,'Bracelet',20,1,'published') returning id`,
+    [art4, cat2],
+  )
+)[0].id
+await as(
+  art4,
+  `insert into product_images (product_id, path, position) values ($1,'a/2.webp',1),($1,'a/1.webp',0)`,
+  [pVisible],
+)
+const ids = async (uid, sql = `select id from catalog_products`) =>
+  (await as(uid, sql)).map((r) => Number(r.id))
+const anonIds = await ids(null)
+ok(
+  anonIds.includes(Number(pVisible)) && !anonIds.includes(Number(pDraft4)),
+  'vue : publié visible, brouillon exclu',
+)
+ok(!anonIds.includes(Number(p2.id)), 'vue : produit masqué par l’admin exclu')
+ok(
+  !(await as(null, `select artisan_id from catalog_products`)).some((r) => r.artisan_id === art2),
+  'vue : artisan suspendu exclu',
+)
+ok(!(await ids(admin)).includes(Number(p2.id)), 'vue : RM-1 appliquée même pour l’admin')
+ok(
+  !(await ids(art4)).includes(Number(pDraft4)),
+  'vue : le propriétaire ne voit pas son brouillon dans le catalogue',
+)
+const row = (await as(null, `select * from catalog_products where id=$1`, [pVisible]))[0]
+ok(row.image_path === 'a/1.webp', 'vue : image principale = position 0')
+ok(
+  row.artisan_slug === 'atelier-hela' && row.category_slug === 'poterie-ceramique',
+  'vue : slugs artisan et catégorie',
+)
+ok(
+  (await as(null, `select id from catalog_products where search_text ilike '%ceramique emaillee%'`))
+    .length === 1,
+  'recherche sans accents : « ceramique emaillee » → « Céramique émaillée »',
+)
+await as(admin, `update categories set is_active=false where id=$1`, [cat2])
+ok(
+  !(await ids(null)).includes(Number(pBijou)),
+  'catégorie désactivée → ses produits sortent du catalogue',
+)
+await as(admin, `update categories set is_active=true where id=$1`, [cat2])
+
+console.log('\nAvis publics (product_reviews)')
+await q(`update profiles set full_name='Amira Ben Salah' where id=$1`, [client1])
+await q(
+  `insert into reviews (product_id, client_id, rating, comment) values ($1,$2,4,'Très belle pièce')`,
+  [pVisible, client1],
+)
+await q(
+  `insert into reviews (product_id, client_id, rating, comment, is_hidden) values ($1,$2,1,'Spam',true)`,
+  [pVisible, client2],
+)
+const pub = await as(null, `select * from product_reviews($1)`, [pVisible])
+ok(
+  pub.length === 1 && pub[0].author_name === 'Amira S.',
+  `nom abrégé « ${pub[0]?.author_name} », avis masqué exclu`,
+)
+ok(!('client_id' in pub[0]) && !('email' in pub[0]), 'aucune donnée personnelle exposée')
+ok(
+  Number(
+    (await as(null, `select avg_rating from catalog_products where id=$1`, [pVisible]))[0]
+      .avg_rating,
+  ) === 4,
+  'note moyenne dans la vue (hors avis masqués)',
+)
+
 console.log(`\n${passed} réussis, ${failed} échoués`)
 process.exit(failed ? 1 : 0)

@@ -8,6 +8,10 @@ import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RootLayout } from '@/components/layout/RootLayout'
 import {
   ArtisanPendingPage,
+  ArtisanPublicPage,
+  ArtisansPage,
+  CatalogPage,
+  ProductPage,
   ArtisanProductFormPage,
   ArtisanProductsPage,
   ArtisanShopPage,
@@ -35,10 +39,10 @@ export const router = createBrowserRouter([
         element: <PublicLayout />,
         children: [
           { index: true, element: <HomePage /> },
-          soon('catalogue', 'Catalogue'),
-          soon('produits/:slug', 'Produit'),
-          soon('artisans', 'Nos artisans'),
-          soon('artisans/:slug', 'Boutique'),
+          { path: 'catalogue', element: <CatalogPage /> },
+          { path: 'produits/:slug', element: <ProductPage /> },
+          { path: 'artisans', element: <ArtisansPage /> },
+          { path: 'artisans/:slug', element: <ArtisanPublicPage /> },
           soon('panier', 'Mon panier'),
 
           // Visiteurs uniquement (un utilisateur connecté est redirigé vers son espace)
