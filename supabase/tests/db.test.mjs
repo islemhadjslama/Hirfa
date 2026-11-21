@@ -895,5 +895,58 @@ ok(
   'note moyenne dans la vue (hors avis masqués)',
 )
 
+console.log('\nCompte client et avis (Phase 7)')
+ok(
+  (
+    await as(
+      client1,
+      `update profiles set governorate='Ariana', city='La Soukra', address='5 rue des Roses' where id=$1 returning city`,
+      [client1],
+    )
+  )[0]?.city === 'La Soukra',
+  'le client modifie son adresse par défaut (CLI-1)',
+)
+const myReview = (
+  await as(client1, `select id from reviews where client_id=$1 and product_id=$2`, [
+    client1,
+    pVisible,
+  ])
+)[0]
+ok(
+  (
+    await as(
+      client1,
+      `update reviews set rating=3, comment='Finalement moyen' where id=$1 returning rating`,
+      [myReview.id],
+    )
+  )[0]?.rating === 3,
+  'l’auteur modifie son avis',
+)
+ok(
+  (await as(client2, `update reviews set rating=1 where id=$1 returning id`, [myReview.id]))
+    .length === 0,
+  'un autre client ne modifie pas cet avis',
+)
+ok(
+  (await as(art4, `select id from reviews where product_id=$1`, [pVisible])).length === 1,
+  'l’artisan lit les avis visibles de ses produits (ART-9)',
+)
+ok(
+  (await as(art4, `select * from product_reviews($1)`, [pVisible]))[0]?.author_name === 'Amira S.',
+  'l’artisan obtient le nom abrégé via product_reviews',
+)
+ok(
+  (await as(client1, `delete from reviews where id=$1 returning id`, [myReview.id])).length === 1,
+  'l’auteur supprime son avis',
+)
+ok(
+  (await as(client1, `select can_review_product($1) as ok`, [pVisible]))[0].ok === false,
+  'can_review_product : faux sans sous-commande livrée',
+)
+ok(
+  (await as(client1, `select can_review_product($1) as ok`, [p1.id]))[0].ok === true,
+  'can_review_product : vrai après livraison',
+)
+
 console.log(`\n${passed} réussis, ${failed} échoués`)
 process.exit(failed ? 1 : 0)

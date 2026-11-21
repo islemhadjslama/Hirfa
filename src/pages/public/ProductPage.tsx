@@ -17,6 +17,7 @@ import { FavoriteButton } from '@/components/common/FavoriteButton'
 import { ProductGrid } from '@/components/common/ProductCard'
 import { QuantityStepper } from '@/components/common/QuantityStepper'
 import { RatingStars } from '@/components/common/RatingStars'
+import { MyReviewPanel } from '@/components/reviews/MyReviewPanel'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import {
@@ -102,6 +103,7 @@ function Reviews({
         </h2>
         {count > 0 && <RatingStars rating={avgRating} count={count} size="md" />}
       </div>
+      <MyReviewPanel productId={productId} />
       {reviews.isPending ? (
         <Skeleton className="h-24 w-full" />
       ) : reviews.isError ? (

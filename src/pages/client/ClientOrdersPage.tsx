@@ -5,6 +5,7 @@ import { EmptyState } from '@/components/common/EmptyState'
 import { ErrorState } from '@/components/common/ErrorState'
 import { Pagination } from '@/components/common/Pagination'
 import { SubOrderStatusBadge } from '@/components/common/StatusBadge'
+import { AccountNav } from '@/components/layout/AccountNav'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { CLIENT_ORDERS_PER_PAGE, useClientOrders } from '@/features/orders/api'
@@ -22,8 +23,9 @@ export default function ClientOrdersPage() {
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6">
-      <h1 className="text-3xl font-semibold">Mes commandes</h1>
-      <p className="mt-1 mb-6 text-sm text-muted-foreground">
+      <h1 className="mb-4 text-3xl font-semibold">Mes commandes</h1>
+      <AccountNav />
+      <p className="-mt-2 mb-6 text-sm text-muted-foreground">
         Chaque commande est découpée en un colis par artisan, avec son propre suivi.
       </p>
 

@@ -19,6 +19,8 @@ export const CheckoutPage = lazy(() => import('@/pages/client/CheckoutPage'))
 export const OrderConfirmationPage = lazy(() => import('@/pages/client/OrderConfirmationPage'))
 export const ClientOrdersPage = lazy(() => import('@/pages/client/ClientOrdersPage'))
 export const ClientOrderDetailPage = lazy(() => import('@/pages/client/ClientOrderDetailPage'))
+export const AccountPage = lazy(() => import('@/pages/client/AccountPage'))
+export const FavoritesPage = lazy(() => import('@/pages/client/FavoritesPage'))
 
 // Authentification
 export const LoginPage = lazy(() => import('@/pages/public/LoginPage'))
@@ -34,3 +36,4 @@ export const ArtisanProductsPage = lazy(() => import('@/pages/artisan/ArtisanPro
 export const ArtisanProductFormPage = lazy(() => import('@/pages/artisan/ArtisanProductFormPage'))
 export const ArtisanOrdersPage = lazy(() => import('@/pages/artisan/ArtisanOrdersPage'))
 export const ArtisanOrderDetailPage = lazy(() => import('@/pages/artisan/ArtisanOrderDetailPage'))
+export const ArtisanReviewsPage = lazy(() => import('@/pages/artisan/ArtisanReviewsPage'))

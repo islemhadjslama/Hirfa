@@ -7,16 +7,19 @@ import { ArtisanLayout } from '@/components/layout/ArtisanLayout'
 import { PublicLayout } from '@/components/layout/PublicLayout'
 import { RootLayout } from '@/components/layout/RootLayout'
 import {
+  AccountPage,
   ArtisanOrderDetailPage,
   ArtisanOrdersPage,
   ArtisanPendingPage,
   ArtisanPublicPage,
+  ArtisanReviewsPage,
   ArtisansPage,
   CartPage,
   CatalogPage,
   CheckoutPage,
   ClientOrderDetailPage,
   ClientOrdersPage,
+  FavoritesPage,
   ProductPage,
   ArtisanProductFormPage,
   ArtisanProductsPage,
@@ -70,10 +73,10 @@ export const router = createBrowserRouter([
             children: [
               { path: 'commande', element: <CheckoutPage /> },
               { path: 'commande/confirmation/:id', element: <OrderConfirmationPage /> },
-              soon('compte', 'Mon compte'),
+              { path: 'compte', element: <AccountPage /> },
               { path: 'compte/commandes', element: <ClientOrdersPage /> },
               { path: 'compte/commandes/:id', element: <ClientOrderDetailPage /> },
-              soon('compte/favoris', 'Mes favoris'),
+              { path: 'compte/favoris', element: <FavoritesPage /> },
             ],
           },
 
@@ -103,7 +106,7 @@ export const router = createBrowserRouter([
                   { path: 'produits/:id/modifier', element: <ArtisanProductFormPage /> },
                   { path: 'commandes', element: <ArtisanOrdersPage /> },
                   { path: 'commandes/:id', element: <ArtisanOrderDetailPage /> },
-                  soon('avis', 'Avis reçus'),
+                  { path: 'avis', element: <ArtisanReviewsPage /> },
                 ],
               },
             ],

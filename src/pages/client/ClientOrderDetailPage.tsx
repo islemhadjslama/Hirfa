@@ -9,15 +9,18 @@ import { PageLoader } from '@/components/common/PageLoader'
 import { SubOrderStatusBadge } from '@/components/common/StatusBadge'
 import { CancelSubOrderDialog } from '@/components/orders/CancelSubOrderDialog'
 import { StatusHistory, StatusProgress } from '@/components/orders/OrderTimeline'
+import { ReviewDialogButton } from '@/components/reviews/ReviewDialog'
 import { Button } from '@/components/ui/button'
 import { actorLabel } from '@/features/orders/actor'
 import { useOrder, useUpdateSubOrderStatus, type OrderSubOrder } from '@/features/orders/api'
+import { useMyReviews } from '@/features/reviews/api'
 import { getErrorMessage } from '@/lib/errors'
 import { formatDateTime, formatPrice } from '@/lib/format'
 
 function SubOrderCard({ sub, clientId }: { sub: OrderSubOrder; clientId: string }) {
   const [cancelOpen, setCancelOpen] = useState(false)
   const update = useUpdateSubOrderStatus()
+  const myReviews = useMyReviews()
   const artisanName = sub.artisan?.shop_name ?? 'l’artisan'
 
   function cancel(reason: string) {
@@ -59,12 +62,22 @@ function SubOrderCard({ sub, clientId }: { sub: OrderSubOrder; clientId: string 
 
       <ul className="space-y-1 border-t pt-3 text-sm">
         {sub.order_items.map((item) => (
-          <li key={item.id} className="flex justify-between gap-2">
-            <span>
-              {item.quantity} × {item.product_name}{' '}
-              <span className="text-muted-foreground">({formatPrice(item.unit_price)})</span>
-            </span>
-            <span className="shrink-0">{formatPrice(item.line_total)}</span>
+          <li key={item.id} className="space-y-1">
+            <div className="flex justify-between gap-2">
+              <span>
+                {item.quantity} × {item.product_name}{' '}
+                <span className="text-muted-foreground">({formatPrice(item.unit_price)})</span>
+              </span>
+              <span className="shrink-0">{formatPrice(item.line_total)}</span>
+            </div>
+            {/* CLI-6 : avis possible uniquement sur un colis livré */}
+            {sub.status === 'delivered' && item.product_id !== null && (
+              <ReviewDialogButton
+                productId={item.product_id}
+                productName={item.product_name}
+                existing={myReviews.data?.get(item.product_id) ?? null}
+              />
+            )}
           </li>
         ))}
         <li className="flex justify-between gap-2 text-muted-foreground">
