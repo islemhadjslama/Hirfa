@@ -9,8 +9,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "preview": "vite preview",
-    "db:push": "supabase db push",
-    "db:types": "supabase gen types typescript --linked > src/types/database.ts",
+    "db:push": "supabase db push --remote --include-seed",
+    "db:types": "supabase gen types typescript --remote --schema public > src/types/database.ts",
+    "db:test": "node supabase/tests/db.test.mjs",
     "seed": "tsx scripts/seed-demo.ts"
   },
   "dependencies": {
@@ -33,6 +34,7 @@
     "zustand": "^5.1.0"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.17",
     "@eslint/js": "^10.0.1",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",

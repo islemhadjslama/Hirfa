@@ -36,8 +36,14 @@ npm run dev                  # http://localhost:5173
 ```bash
 npx supabase login
 npx supabase link --project-ref <PROJECT_REF>
-npm run db:push     # applique les migrations de supabase/migrations
+npm run db:push     # applique les migrations + seed.sql (catégories)
 npm run db:types    # régénère src/types/database.ts
+```
+
+Pour tester les migrations **en local, sans Supabase ni Docker** (Postgres en WebAssembly) :
+
+```bash
+npm run db:test     # migrations + seed + ~100 scénarios RLS / RPC / triggers
 ```
 
 ## Scripts
@@ -49,8 +55,9 @@ npm run db:types    # régénère src/types/database.ts
 | `npm run lint` | ESLint |
 | `npm run format` | Prettier (avec tri des classes Tailwind) |
 | `npm run preview` | Prévisualisation du build |
-| `npm run db:push` | Pousse les migrations vers Supabase |
+| `npm run db:push` | Pousse les migrations et `seed.sql` vers Supabase |
 | `npm run db:types` | Génère les types TypeScript depuis la base liée |
+| `npm run db:test` | Teste migrations, RLS et RPC dans PGlite |
 | `npm run seed` | Données de démonstration (disponible en Phase 9) |
 
 ## Structure
@@ -80,7 +87,7 @@ Ils seront créés par `npm run seed` (Phase 9) :
 ## Avancement
 
 - [x] Phase 0 — Initialisation (projet, layouts, accueil statique)
-- [ ] Phase 1 — Base de données
+- [x] Phase 1 — Base de données
 - [ ] Phase 2 — Authentification
 - [ ] Phase 3 — Espace artisan
 - [ ] Phase 4 — Catalogue public
