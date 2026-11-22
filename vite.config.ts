@@ -11,4 +11,8 @@ export default defineConfig({
       '@': path.resolve(import.meta.dirname, './src'),
     },
   },
+  server: {
+    // Autorise le partage via « Ports » de VS Code (tunnels *.devtunnels.ms).
+    allowedHosts: ['.devtunnels.ms'],
+  },
 })
